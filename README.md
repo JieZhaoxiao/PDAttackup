@@ -123,9 +123,12 @@ python tools/eval_lpips.py
   <br>
   <br>
   <img src="fig/3.png" width="80%" alt="Qualitative Result 3">
-    <br>
+  <br>
   <br>
   <img src="fig/4.png" width="80%" alt="Qualitative Result 4">
+  <br>
+  <br>
+  <img src="fig/5.png" width="80%" alt="Qualitative Result 5">
 </div>
 
 ## Acknowledgement
