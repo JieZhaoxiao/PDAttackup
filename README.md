@@ -85,12 +85,12 @@ The specific surrogate models we support can be found in `tools/eval_asr.py` (e.
 To investigate how cross-attention layers and prompts of diffusion models contribute to the transferability of unrestricted adversarial examples, we provide 4 distinct probing baselines inside the `probing_analysis/` directory. Each baseline demonstrates a separate ablation as discussed in the paper.
 
 ### 1. Probing Prompt Replacement
-We explore whether guiding UAE generation with correct or similarly categorized prompts can effectively disrupt the attention maps:
+We explore whether guiding unrestricted adversarial example generation with correct or similarly categorized prompts can effectively disrupt the attention maps:
 - **Correct Prompt** (`main_correct.py`): Reconstructs the image exclusively guided by the exact true label.
 - **Similar Prompt** (`main_similar.py`): Replaces the ground-truth label with a conceptually similar category.
 
 ### 2. Probing Prompt Perturbations
-We accumulate and average the CA maps to distribute attention uniformly across every pixel and disrupt original semantic associations:
+We accumulate and average the cross-attention maps to distribute attention uniformly across every pixel and disrupt original semantic associations:
 - **Target Label Perturbation** (`main_single.py`): Only perturbs the attention of the target object.
 - **Full Context Perturbation** (`main_context.py`): Perturbs the attention of the entire context message.
 
@@ -100,14 +100,14 @@ We accumulate and average the CA maps to distribute attention uniformly across e
    
 After generating the unrestricted adversarial examples, you can evaluate their transferability and imperceptibility using the provided scripts in the `tools/` directory.
 
-### 1. Evaluating Transferability (ASR)
+### 1. Evaluating Transferability
 To assess the adversarial transferability across different black-box models, run:
 ```bash
 python tools/eval_asr.py
 ```
-This script sequentially evaluates the misclassification rate for all synthesized results.
 
-### 2. Evaluating Imperceptibility (LPIPS)
+
+### 2. Evaluating Imperceptibility
 To ensure the imperceptibility of the generated semantic perturbations compared to the clean references, compute the Learned Perceptual Image Patch Similarity (LPIPS):
 ```bash
 python tools/eval_lpips.py
@@ -123,6 +123,9 @@ python tools/eval_lpips.py
   <br>
   <br>
   <img src="fig/3.png" width="80%" alt="Qualitative Result 3">
+    <br>
+  <br>
+  <img src="fig/4.png" width="80%" alt="Qualitative Result 4">
 </div>
 
 ## Acknowledgement
