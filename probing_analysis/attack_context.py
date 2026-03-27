@@ -306,7 +306,7 @@ def latent2image(vae, latents):
 
 
 @torch.enable_grad()
-def diffattack(
+def pdattackup(
         model,
         label,
         controller,

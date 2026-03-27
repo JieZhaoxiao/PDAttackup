@@ -131,3 +131,7 @@ python tools/eval_lpips.py
 ## Acknowledgement
 
 We would like to thank the authors of LDM, and DiffAttack for their great work and generously providing source codes, which inspired our work and helped us a lot in the implementation. Source codes are available at: [latent-diffusion](https://github.com/CompVis/latent-diffusion) and [DiffAttack](https://github.com/WindVChen/DiffAttack).
+
+## License
+
+This project is licensed under the Apache-2.0 license. See [LICENSE](LICENSE) for details.

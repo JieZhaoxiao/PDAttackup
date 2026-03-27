@@ -64,7 +64,7 @@ def run_diffusion_attack(image, label, diffusion_model, diffusion_steps, guidanc
                          model_name="inception", start_step=15, iterations=30, img_index=0, args=None):
     controller = AttentionControlEdit(diffusion_steps, self_replace_steps, args.res)
 
-    adv_image, clean_acc, adv_acc = attack.diffattack(diffusion_model, label, controller,
+    adv_image, clean_acc, adv_acc = attack.pdattackup(diffusion_model, label, controller,
                                                                   num_inference_steps=diffusion_steps,
                                                                   guidance_scale=guidance,
                                                                   image=image,
