@@ -187,7 +187,7 @@ def log_prompt_summary(img_index, context_prompt, foreground_prompt, background_
 
 
 @torch.enable_grad()
-def diffattack(
+def aadattack(
     model,
     label,
     controller,
