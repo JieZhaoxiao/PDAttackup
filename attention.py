@@ -1,6 +1,7 @@
-﻿from typing import Union, Tuple
-import torch
+from typing import Tuple, Union
 import abc
+
+import torch
 
 
 class AttentionControl(abc.ABC):
@@ -42,8 +43,14 @@ class AttentionStore(AttentionControl):
 
     @staticmethod
     def get_empty_store():
-        return {"down_cross": [], "mid_cross": [], "up_cross": [],
-                "down_self": [], "mid_self": [], "up_self": []}
+        return {
+            "down_cross": [],
+            "mid_cross": [],
+            "up_cross": [],
+            "down_self": [],
+            "mid_self": [],
+            "up_self": [],
+        }
 
     def forward(self, attn, is_cross: bool, place_in_unet: str):
         key = f"{place_in_unet}_{'cross' if is_cross else 'self'}"
@@ -61,9 +68,10 @@ class AttentionStore(AttentionControl):
         self.step_store = self.get_empty_store()
 
     def get_average_attention(self):
-        average_attention = {key: [item / self.cur_step for item in self.attention_store[key]] for key in
-                             self.attention_store}
-        return average_attention
+        return {
+            key: [item / self.cur_step for item in self.attention_store[key]]
+            for key in self.attention_store
+        }
 
     def reset(self):
         super(AttentionStore, self).reset()
@@ -72,8 +80,7 @@ class AttentionStore(AttentionControl):
 
 
 class AttentionControlEdit(AttentionStore, abc.ABC):
-    def __init__(self, num_steps: int,
-                 self_replace_steps: Union[float, Tuple[float, float]], res):
+    def __init__(self, num_steps: int, self_replace_steps: Union[float, Tuple[float, float]], res):
         super(AttentionControlEdit, self).__init__(res)
         self.batch_size = 2
         if type(self_replace_steps) is float:
@@ -86,11 +93,11 @@ class AttentionControlEdit(AttentionStore, abc.ABC):
         super(AttentionControlEdit, self).forward(attn, is_cross, place_in_unet)
         if 4 <= self.cur_step <= 14:
             if is_cross or (self.num_self_replace[0] <= self.cur_step < self.num_self_replace[1]):
-                h = attn.shape[0] // (self.batch_size)
+                h = attn.shape[0] // self.batch_size
                 attn = attn.reshape(self.batch_size, h, *attn.shape[1:])
-                attn_base, attn_repalce = attn[0], attn[1:]
-                if not is_cross:
-                    self.loss += self.criterion(attn[1:], self.replace_self_attention(attn_base, attn_repalce))
+                attn_base, attn_replace = attn[0], attn[1:]
+                if not is_cross and place_in_unet == "mid":
+                    self.loss += self.criterion(attn_replace, self.replace_self_attention(attn_base, attn_replace))
                 attn = attn.reshape(self.batch_size * h, *attn.shape[2:])
             return attn
 

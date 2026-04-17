@@ -1,6 +1,6 @@
-# Rethinking Transferable Unrestricted Attacks via Prompt-Driven Diffusion (PDAttack++)
- 
-The official code repository for our paper: **Rethinking Transferable Unrestricted Attacks via Prompt-Driven Diffusion**.
+# Attention-Aligned Diffusion Attack for Transferable and Imperceptible Unrestricted Adversarial Examples (AADAttack)
+
+The official code repository for our paper: **Attention-Aligned Diffusion Attack for Transferable and Imperceptible Unrestricted Adversarial Examples**.
 
 ## Overview
 
@@ -48,22 +48,25 @@ The official code repository for our paper: **Rethinking Transferable Unrestrict
 
 ## Prompt Generation
 
-Our method leverages Multimodal Large Language Models (MLLMs) to generate targeted text prompts that guide the diffusion model during the adversarial attack process. By dynamically perceiving the clean image, the MLLM produces dense text descriptions.
+Our method leverages a Multimodal Large Language Model (MLLM) to generate a 15-token prompt triplet for each clean image: a context prompt, a foreground prompt, and a background prompt. The context prompt guides reverse diffusion, while the foreground and background prompts are used to construct complementary cross-attention and suppress cross-attention leakage.
 
-### Generating Prompts via Open-Source MLLMs
-You can strictly utilize local models such as `Qwen3-VL-8B-Instruct` to automatically generate descriptive prompts. 
+### Generating Prompt Triplets via Qwen3-VL
+You can utilize the local `Qwen3-VL-8B-Instruct` model to automatically generate the prompt triplets required by AADAttack.
 - Executing `python prompt_qwen.py` will iterate through your designated dataset.
-- It prompts the MLLM to generate 15, 45, or 75-token descriptions focusing precisely on the target object class to build high-quality context conditions.
-- The generated texts are saved as `.txt` sequences in the `Text/qwen3_vl/` folder.
+- It generates one 15-token context prompt together with a class-label-constrained foreground prompt and a short non-target background prompt.
+- The generated texts are saved into `Text/qwen3_vl/15_tokens.txt`, `Text/qwen3_vl/15_tokens_fg.txt`, and `Text/qwen3_vl/15_tokens_bg.txt`.
 
-### Generating Prompts via Commercial APIs
-Alternatively, for higher quality or zero-local-overhead generation, you can utilize cloud API platforms:
-- You must parse your respective API keys for Alibaba Bailian (Qwen3-VL / Kimi-k2.5), Google AI Studio (Gemma-3 / Gemini3), or OpenAI (GPT-5.4).
-- Sending the clean image alongside an instructional prompt will retrieve concise semantic descriptions similar to the local deployment pipeline.
+The foreground prompt is constrained to the canonical class label, while the context and background prompts are generated from the image content and used directly in the attack pipeline.
+
+### Generating Prompt Triplets via APIs
+Alternatively, you can also generate the same 15-token prompt triplets through commercial API platforms with your own API key.
+- API-capable MLLMs such as Qwen3-VL / Kimi-k2.5, GPT-series models, and Gemma-series models can all be used, as long as they return the same three items: a short context prompt, the foreground class label, and one short background cue.
+- Regardless of the provider, the final prompt files should still be saved as `Text/qwen3_vl/15_tokens.txt`, `Text/qwen3_vl/15_tokens_fg.txt`, and `Text/qwen3_vl/15_tokens_bg.txt`.
+- The released codebase focuses on the local `Qwen3-VL-8B-Instruct` pipeline, while API-based prompt generation remains a supported alternative for users who prefer cloud inference.
 
 ## Crafting Unrestricted Adversarial Examples
 
-The following command generates unrestricted adversarial examples utilizing our proposed PDAttack++:
+The following command generates unrestricted adversarial examples utilizing our proposed AADAttack:
    
 ```bash
 python main.py --model_name <surrogate_model> \
@@ -74,27 +77,12 @@ python main.py --model_name <surrogate_model> \
                --start_step 15 \
                --iterations 30 \
                --attack_loss_weight 10 \
-               --cross_attn_loss_weight 10000 \
+               --transfer_loss_weight 1000 \
+               --cross_attn_loss_weight 100 \
                --self_attn_loss_weight 100
 ```
-   
-The specific surrogate models we support can be found in `tools/eval_asr.py` (e.g., `resnet50`, `vgg19`, `vit_base_patch16_224`, etc.).
 
-## Probing Analysis Baselines
-
-To investigate how cross-attention layers and prompts of diffusion models contribute to the transferability of unrestricted adversarial examples, we provide 4 distinct probing baselines inside the `probing_analysis/` directory. Each baseline demonstrates a separate ablation as discussed in the paper.
-
-### 1. Probing Prompt Replacement
-We explore whether guiding unrestricted adversarial example generation with correct or similarly categorized prompts can effectively disrupt the attention maps:
-- **Correct Prompt** (`main_correct.py`): Reconstructs the image exclusively guided by the exact true label.
-- **Similar Prompt** (`main_similar.py`): Replaces the ground-truth label with a conceptually similar category.
-
-### 2. Probing Prompt Perturbations
-We accumulate and average the cross-attention maps to distribute attention uniformly across every pixel and disrupt original semantic associations:
-- **Target Label Perturbation** (`main_single.py`): Only perturbs the attention of the target object.
-- **Full Context Perturbation** (`main_context.py`): Perturbs the attention of the entire context message.
-
-*You can execute any of these baselines identically to the core workflow by simply running the respective `probing_analysis/main_*.py` script.*
+AADAttack uses the 15-token context prompt to guide reverse diffusion, injects background semantics into the complementary salient regions of the foreground, and aligns complementary cross-attention together with middle self-attention to preserve visual imperceptibility. The specific surrogate models we support can be found in `tools/eval_asr.py` (e.g., `resnet50`, `vgg19`, `vit_base_patch16_224`, etc.).
 
 ## Evaluation
    
@@ -129,6 +117,9 @@ python tools/eval_lpips.py
   <br>
   <br>
   <img src="fig/5.png" width="80%" alt="Qualitative Result 5">
+  <br>
+  <br>
+  <img src="fig/6.png" width="80%" alt="Qualitative Result 6">
 </div>
 
 ## Acknowledgement

@@ -1,4 +1,4 @@
-﻿import numpy as np
+import numpy as np
 import torch
 from PIL import Image
 import cv2
