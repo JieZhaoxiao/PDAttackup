@@ -49,6 +49,7 @@ The official code repository for our paper: **Attention-Aligned Diffusion Attack
 ## Prompt Generation
 
 Our method leverages a Multimodal Large Language Model (MLLM) to generate a 15-token prompt triplet for each clean image: a context prompt, a foreground prompt, and a background prompt. The context prompt guides reverse diffusion, while the foreground and background prompts are used to construct complementary cross-attention and suppress cross-attention leakage.
+The main manuscript uses Qwen-plus for the default prompt setting and additional MLLM/prompt-length sweeps in Table 3. The released `prompt_qwen.py` script provides a local 15-token Qwen3-VL-8B-Instruct reproduction path only; prompts from other MLLMs or longer prompt settings should be prepared externally in the same three-file format.
 
 ### Generating Prompt Triplets via Qwen3-VL
 You can utilize the local `Qwen3-VL-8B-Instruct` model to automatically generate the prompt triplets required by AADAttack.
@@ -82,7 +83,7 @@ python main.py --model_name <surrogate_model> \
                --self_attn_loss_weight 100
 ```
 
-AADAttack uses the 15-token context prompt to guide reverse diffusion, injects background semantics into the complementary salient regions of the foreground, and aligns complementary cross-attention together with middle self-attention to preserve visual imperceptibility. The specific surrogate models we support can be found in `tools/eval_asr.py` (e.g., `resnet50`, `vgg19`, `vit_base_patch16_224`, etc.).
+AADAttack uses the 15-token context prompt to guide reverse diffusion, injects background semantics into the complementary salient regions of the foreground, and aligns complementary cross-attention together with middle self-attention to preserve visual imperceptibility. The specific surrogate models currently supported by `--model_name` include `resnet`, `mobile`, `vgg`, `vit`, `swin`, `deit-b`, `convnext`, `inception`, `deit-s`, `mixer-b`, and `mixer-l`.
 
 ## Evaluation
    
